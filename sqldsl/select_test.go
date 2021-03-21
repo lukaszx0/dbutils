@@ -22,6 +22,7 @@ type BookTable struct {
 	ID       IntField
 	Title    StringField
 	AuthorID IntField
+	Language StringField
 }
 
 func (t *BookTable) Name() string {
@@ -32,6 +33,7 @@ var Book = &BookTable{
 	ID:       IntField{"books", "id", "INT"},
 	Title:    StringField{"books", "title", "VARCHAR(400)"},
 	AuthorID: IntField{"books", "author_id", "INT"},
+	Language: StringField{"books", "language", "CHAR(3)"},
 }
 
 func TestSelect(t *testing.T) {
@@ -77,6 +79,18 @@ func TestSelect(t *testing.T) {
 			"offset",
 			"SELECT books.title FROM books OFFSET 321",
 			Select(Book.Title).From(Book).Offset(321).String(),
+		},
+		{
+			"full",
+			"SELECT authors.first_name, authors.last_name FROM authors JOIN authors ON authors.id = books.author_id WHERE authors.language = PL ORDER BY books.id ASC LIMIT 123 OFFSET 321",
+			Select(Author.FirstName, Author.LastName).
+				From(Author).
+				Join(Author).On(Author.ID.IsEq(Book.AuthorID)).
+				Where(Book.Language.Eq("PL")).
+				OrderBy(Book.ID.ASC()).
+				Limit(123).
+				Offset(321).
+				String(),
 		},
 	}
 	for _, test := range tests {
