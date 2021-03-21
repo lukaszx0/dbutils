@@ -106,3 +106,18 @@ func TestSelect(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkSelect(b *testing.B) {
+	b.ReportAllocs()
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		Select(Author.FirstName, Author.LastName).
+			From(Author).
+			Join(Author).On(Author.ID.IsEq(Book.AuthorID)).
+			Where(Book.Language.Eq("PL")).
+			OrderBy(Book.ID.ASC()).
+			Limit(123).
+			Offset(321).
+			String()
+	}
+}
