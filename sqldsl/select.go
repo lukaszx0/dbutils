@@ -5,11 +5,6 @@ import (
 	"strings"
 )
 
-type Field interface {
-	TableName() string
-	Name() string
-}
-
 type Table interface {
 	Name() string
 }
@@ -36,50 +31,6 @@ var predicates = map[Predicate]string {
 	InPredicate: "IN",
 }
 
-type StringField struct {
-	table string
-	name string
-	dbtype string
-}
-
-func (f StringField) Name() string {
-	return f.name
-}
-
-func (f StringField) TableName() string {
-	return f.table
-}
-
-func (f StringField) Eq(v string) Condition {
-	return Condition{Predicate: EqPredicate, FieldBinding: FieldBinding{f, v}}
-}
-
-func (f StringField) IsEq(v StringField) Condition {
-	return Condition{Predicate: EqPredicate, FieldBinding: FieldBinding{f, v}}
-}
-
-type IntField struct {
-	table string
-	name string
-	dbtype string
-}
-
-func (f IntField) Name() string {
-	return f.name
-}
-
-func (f IntField) TableName() string {
-	return f.table
-}
-
-func (f IntField) Eq(v int) Condition {
-	return Condition{Predicate: EqPredicate, FieldBinding: FieldBinding{f, v}}
-}
-
-func (f IntField) IsEq(v IntField) Condition {
-	return Condition{Predicate: EqPredicate, FieldBinding: FieldBinding{f, v}}
-}
-
 type Selector interface {
 	TableName() string
 }
@@ -88,19 +39,9 @@ type Query interface {
 	String() string
 }
 
-type SelectFromStep interface {
-	Query
-	From(Table) SelectJoinStep
-}
-
 type Condition struct {
 	Predicate Predicate
 	FieldBinding FieldBinding
-}
-
-type FieldBinding struct {
-	Field Field
-	Value interface{}
 }
 
 type Join struct {
@@ -115,20 +56,8 @@ type selection struct {
 	predicates []Condition
 }
 
-type SelectWhereStep interface {
-	Query
-	Where(...Condition) Query
-}
-
-type SelectJoinStep interface {
-	Query
-	SelectWhereStep
-	Join(Table) SelectOnStep
-}
-
-type SelectOnStep interface {
-	Query
-	On(...Condition) SelectJoinStep
+func Select(f ...Field) SelectFromStep {
+	return &selection{projection: f}
 }
 
 func (s *selection) From(t Table) SelectJoinStep {
@@ -192,8 +121,4 @@ func (s *selection) String() string {
 		q = fmt.Sprintf("%s WHERE %s", q, strings.Join(w, " AND "))
 	}
 	return q
-}
-
-func Select(f ...Field) SelectFromStep {
-	return &selection{projection: f}
 }
