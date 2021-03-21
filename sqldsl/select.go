@@ -52,7 +52,7 @@ type selection struct {
 	predicates []Condition
 	grouping   []Field
 	having     []Condition
-	ordering   []Field
+	ordering   []Order
 	limit      int
 	offset     int
 }
@@ -94,7 +94,7 @@ func (s *selection) Having(c ...Condition) SelectOrderByStep {
 	return s
 }
 
-func (s *selection) OrderBy(f ...Field) SelectLimitStep {
+func (s *selection) OrderBy(f ...Order) SelectLimitStep {
 	s.ordering = f
 	return s
 }
@@ -153,6 +153,14 @@ func (s *selection) String() string {
 			groups = append(groups, fmt.Sprintf("%s.%s", g.TableName(), g.Name()))
 		}
 		q = fmt.Sprintf("%s GROUP BY %s", q, strings.Join(groups, ", "))
+	}
+	// ORDER BY
+	if len(s.ordering) > 0 {
+		var order []string
+		for _, o := range s.ordering {
+			order = append(order, fmt.Sprintf("%s.%s %s", o.Field.TableName(), o.Field.Name(), orders[o.Direction]))
+		}
+		q = fmt.Sprintf("%s ORDER BY %s", q, strings.Join(order, ", "))
 	}
 	return q
 }

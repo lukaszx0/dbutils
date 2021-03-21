@@ -58,6 +58,11 @@ func TestSelect(t *testing.T) {
 			Select(Book.Title).From(Book).GroupBy(Book.ID).String(),
 			"SELECT books.title FROM books GROUP BY books.id",
 		},
+		{
+			"select_order",
+			Select(Book.Title).From(Book).OrderBy(Book.ID.ASC()).String(),
+			"SELECT books.title FROM books ORDER BY books.id ASC",
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

@@ -1,5 +1,22 @@
 package sqldsl
 
+type OrderDirection int
+
+const (
+	OrderASC OrderDirection = iota
+	OrderDESC
+)
+
+var orders = map[OrderDirection]string{
+	OrderASC:  "ASC",
+	OrderDESC: "DESC",
+}
+
+type Order struct {
+	Field     Field
+	Direction OrderDirection
+}
+
 type Field interface {
 	TableName() string
 	Name() string
@@ -11,8 +28,8 @@ type FieldBinding struct {
 }
 
 type StringField struct {
-	table string
-	name string
+	table  string
+	name   string
 	dbtype string
 }
 
@@ -32,9 +49,17 @@ func (f StringField) IsEq(v StringField) Condition {
 	return Condition{Predicate: EqPredicate, FieldBinding: FieldBinding{f, v}}
 }
 
+func (f StringField) ASC() Order {
+	return Order{f, OrderASC}
+}
+
+func (f StringField) DESC() Order {
+	return Order{f, OrderDESC}
+}
+
 type IntField struct {
-	table string
-	name string
+	table  string
+	name   string
 	dbtype string
 }
 
@@ -52,4 +77,12 @@ func (f IntField) Eq(v int) Condition {
 
 func (f IntField) IsEq(v IntField) Condition {
 	return Condition{Predicate: EqPredicate, FieldBinding: FieldBinding{f, v}}
+}
+
+func (f IntField) ASC() Order {
+	return Order{f, OrderASC}
+}
+
+func (f IntField) DESC() Order {
+	return Order{f, OrderDESC}
 }

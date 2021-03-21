@@ -54,7 +54,7 @@ type SelectHavingStep interface {
 
 type SelectOrderByStep interface {
 	Query
-	OrderBy(...Field) SelectLimitStep
+	OrderBy(...Order) SelectLimitStep
 	SelectLimitStep
 	SelectOffsetStep
 }
