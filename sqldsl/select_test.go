@@ -82,7 +82,12 @@ func TestSelect(t *testing.T) {
 		},
 		{
 			"full",
-			"SELECT authors.first_name, authors.last_name FROM authors JOIN authors ON authors.id = books.author_id WHERE authors.language = PL ORDER BY books.id ASC LIMIT 123 OFFSET 321",
+			"SELECT authors.first_name, authors.last_name " +
+				"FROM authors JOIN authors ON authors.id = books.author_id " +
+				"WHERE authors.language = PL " +
+				"ORDER BY books.id ASC " +
+				"LIMIT 123 " +
+				"OFFSET 321",
 			Select(Author.FirstName, Author.LastName).
 				From(Author).
 				Join(Author).On(Author.ID.IsEq(Book.AuthorID)).
