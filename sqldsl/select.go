@@ -6,6 +6,11 @@ import (
 )
 
 type Field interface {
+	TableName() string
+	Name() string
+}
+
+type Table interface {
 	Name() string
 }
 
@@ -32,6 +37,7 @@ var predicates = map[Predicate]string {
 }
 
 type StringField struct {
+	table string
 	name string
 	dbtype string
 }
@@ -40,11 +46,20 @@ func (f StringField) Name() string {
 	return f.name
 }
 
+func (f StringField) TableName() string {
+	return f.table
+}
+
 func (f StringField) Eq(v string) Condition {
 	return Condition{Predicate: EqPredicate, FieldBinding: FieldBinding{f, v}}
 }
 
+func (f StringField) IsEq(v StringField) Condition {
+	return Condition{Predicate: EqPredicate, FieldBinding: FieldBinding{f, v}}
+}
+
 type IntField struct {
+	table string
 	name string
 	dbtype string
 }
@@ -53,7 +68,15 @@ func (f IntField) Name() string {
 	return f.name
 }
 
+func (f IntField) TableName() string {
+	return f.table
+}
+
 func (f IntField) Eq(v int) Condition {
+	return Condition{Predicate: EqPredicate, FieldBinding: FieldBinding{f, v}}
+}
+
+func (f IntField) IsEq(v IntField) Condition {
 	return Condition{Predicate: EqPredicate, FieldBinding: FieldBinding{f, v}}
 }
 
@@ -67,7 +90,7 @@ type Query interface {
 
 type SelectFromStep interface {
 	Query
-	From(Selector) SelectWhereStep
+	From(Table) SelectJoinStep
 }
 
 type Condition struct {
@@ -80,10 +103,16 @@ type FieldBinding struct {
 	Value interface{}
 }
 
+type Join struct {
+	Table Table
+	Conditions []Condition
+}
+
 type selection struct {
-	selection Selector
+	table      Table
 	projection []Field
-	predicates  []Condition
+	joins      []Join
+	predicates []Condition
 }
 
 type SelectWhereStep interface {
@@ -91,8 +120,32 @@ type SelectWhereStep interface {
 	Where(...Condition) Query
 }
 
-func (s *selection) From(sel Selector) SelectWhereStep {
-	s.selection = sel
+type SelectJoinStep interface {
+	Query
+	SelectWhereStep
+	Join(Table) SelectOnStep
+}
+
+type SelectOnStep interface {
+	Query
+	On(...Condition) SelectJoinStep
+}
+
+func (s *selection) From(t Table) SelectJoinStep {
+	s.table = t
+	return s
+}
+
+func (s *selection) Join(t Table) SelectOnStep {
+	s.joins = append(s.joins, Join{Table: t})
+	return s
+}
+
+func (s *selection) On(c ...Condition) SelectJoinStep {
+	var j Join
+	j, s.joins = s.joins[len(s.joins)-1], s.joins[:len(s.joins)-1]
+	j.Conditions = c
+	s.joins = append(s.joins, j)
 	return s
 }
 
@@ -104,13 +157,37 @@ func (s *selection) Where(c ...Condition) Query {
 func (s *selection) String() string {
 	var fields []string
 	for _, f := range s.projection {
-		fields = append(fields, fmt.Sprintf("%s.%s", s.selection.TableName(), f.Name()))
+		fields = append(fields, fmt.Sprintf("%s.%s", s.table.Name(), f.Name()))
 	}
-	q := fmt.Sprintf("SELECT %s FROM %s", strings.Join(fields, ", "), s.selection.TableName())
+	q := fmt.Sprintf("SELECT %s FROM %s", strings.Join(fields, ", "), s.table.Name())
+	// JOIN
+	if len(s.joins) > 0 {
+		var joins []string
+		for _, j := range s.joins {
+			join := fmt.Sprintf("JOIN %s", j.Table.Name())
+			if len(j.Conditions) > 0 {
+				var conds []string
+				for _, c := range j.Conditions {
+					var v interface{}
+					switch f := c.FieldBinding.Value.(type) {
+					case Field:
+						v = fmt.Sprintf("%s.%s", f.TableName(), f.Name())
+					default:
+						v = f
+					}
+					conds = append(conds, fmt.Sprintf("%s.%s %s %v", c.FieldBinding.Field.TableName(), c.FieldBinding.Field.Name(), predicates[c.Predicate], v))
+				}
+				join = fmt.Sprintf("%s ON %s", join, strings.Join(conds, " "))
+			}
+			joins = append(joins, join)
+		}
+		q = fmt.Sprintf("%s %s", q, strings.Join(joins, " "))
+	}
+	// WHERE
 	if len(s.predicates) > 0 {
 		var w []string
 		for _, p := range s.predicates {
-			w = append(w, fmt.Sprintf("%s.%s %s %v", s.selection.TableName(), p.FieldBinding.Field.Name(), predicates[p.Predicate], p.FieldBinding.Value))
+			w = append(w, fmt.Sprintf("%s.%s %s %v", s.table.Name(), p.FieldBinding.Field.Name(), predicates[p.Predicate], p.FieldBinding.Value))
 		}
 		q = fmt.Sprintf("%s WHERE %s", q, strings.Join(w, " AND "))
 	}
