@@ -36,38 +36,38 @@ var Book = &BookTable{
 
 func TestSelect(t *testing.T) {
 	tests := []struct {
-		name, gen, sql string
+		name, exp, gen string
 	}{
 		{
-			"select",
-			Select(Book.Title).From(Book).String(),
+			"from",
 			"SELECT books.title FROM books",
+			Select(Book.Title).From(Book).String(),
 		},
 		{
-			"select_join",
-			Select(Book.Title).From(Book).Join(Author).On(Author.ID.IsEq(Book.AuthorID)).String(),
+			"join",
 			"SELECT books.title FROM books JOIN authors ON authors.id = books.author_id",
+			Select(Book.Title).From(Book).Join(Author).On(Author.ID.IsEq(Book.AuthorID)).String(),
 		},
 		{
-			"select_where",
-			Select(Book.Title).From(Book).Where(Book.ID.Eq(123)).String(),
+			"where",
 			"SELECT books.title FROM books WHERE books.id = 123",
+			Select(Book.Title).From(Book).Where(Book.ID.Eq(123)).String(),
 		},
 		{
-			"select_group",
-			Select(Book.Title).From(Book).GroupBy(Book.ID).String(),
+			"group",
 			"SELECT books.title FROM books GROUP BY books.id",
+			Select(Book.Title).From(Book).GroupBy(Book.ID).String(),
 		},
 		{
-			"select_order",
-			Select(Book.Title).From(Book).OrderBy(Book.ID.ASC()).String(),
+			"order",
 			"SELECT books.title FROM books ORDER BY books.id ASC",
+			Select(Book.Title).From(Book).OrderBy(Book.ID.ASC()).String(),
 		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if test.gen != test.sql {
-				t.Errorf("\nexpected:  %s\ngenerated: %s", test.sql, test.gen)
+			if test.exp != test.gen {
+				t.Errorf("\nexpected:  %s\ngenerated: %s", test.exp, test.gen)
 			}
 		})
 	}
