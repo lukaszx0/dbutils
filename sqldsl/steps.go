@@ -1,5 +1,9 @@
 package sqldsl
 
+type Query interface {
+	String() string
+}
+
 type SelectFromStep interface {
 	Query
 	From(Table) SelectJoinStep
@@ -7,7 +11,6 @@ type SelectFromStep interface {
 
 type SelectJoinStep interface {
 	Query
-	SelectWhereStep
 	Join(Table) SelectOnStep
 	SelectWhereStep
 	SelectGroupByStep

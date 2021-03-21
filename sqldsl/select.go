@@ -35,10 +35,6 @@ type Selector interface {
 	TableName() string
 }
 
-type Query interface {
-	String() string
-}
-
 type Condition struct {
 	Predicate    Predicate
 	FieldBinding FieldBinding
