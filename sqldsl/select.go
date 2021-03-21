@@ -162,5 +162,13 @@ func (s *selection) String() string {
 		}
 		q = fmt.Sprintf("%s ORDER BY %s", q, strings.Join(order, ", "))
 	}
+	// LIMIT
+	if s.limit > 0 {
+		q = fmt.Sprintf("%s LIMIT %d", q, s.limit)
+	}
+	// OFFSET
+	if s.offset > 0 {
+		q = fmt.Sprintf("%s OFFSET %d", q, s.offset)
+	}
 	return q
 }

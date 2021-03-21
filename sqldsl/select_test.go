@@ -63,6 +63,16 @@ func TestSelect(t *testing.T) {
 			"SELECT books.title FROM books ORDER BY books.id ASC",
 			Select(Book.Title).From(Book).OrderBy(Book.ID.ASC()).String(),
 		},
+		{
+			"limit",
+			"SELECT books.title FROM books LIMIT 123",
+			Select(Book.Title).From(Book).Limit(123).String(),
+		},
+		{
+			"offset",
+			"SELECT books.title FROM books OFFSET 321",
+			Select(Book.Title).From(Book).Offset(321).String(),
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
