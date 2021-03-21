@@ -146,5 +146,13 @@ func (s *selection) String() string {
 		}
 		q = fmt.Sprintf("%s WHERE %s", q, strings.Join(w, " AND "))
 	}
+	// GROUP BY
+	if len(s.grouping) > 0 {
+		var groups []string
+		for _, g := range s.grouping {
+			groups = append(groups, fmt.Sprintf("%s.%s", g.TableName(), g.Name()))
+		}
+		q = fmt.Sprintf("%s GROUP BY %s", q, strings.Join(groups, ", "))
+	}
 	return q
 }

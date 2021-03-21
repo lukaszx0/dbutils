@@ -3,9 +3,9 @@ package sqldsl
 import "testing"
 
 type AuthorTable struct {
-	ID    IntField
+	ID        IntField
 	FirstName StringField
-	LastName StringField
+	LastName  StringField
 }
 
 func (t *AuthorTable) Name() string {
@@ -19,8 +19,8 @@ var Author = &AuthorTable{
 }
 
 type BookTable struct {
-	ID    IntField
-	Title StringField
+	ID       IntField
+	Title    StringField
 	AuthorID IntField
 }
 
@@ -29,8 +29,8 @@ func (t *BookTable) Name() string {
 }
 
 var Book = &BookTable{
-	ID: IntField{"books", "id", "INT"},
-	Title: StringField{"books", "title", "VARCHAR(400)"},
+	ID:       IntField{"books", "id", "INT"},
+	Title:    StringField{"books", "title", "VARCHAR(400)"},
 	AuthorID: IntField{"books", "author_id", "INT"},
 }
 
@@ -52,6 +52,11 @@ func TestSelect(t *testing.T) {
 			"select_where",
 			Select(Book.Title).From(Book).Where(Book.ID.Eq(123)).String(),
 			"SELECT books.title FROM books WHERE books.id = 123",
+		},
+		{
+			"select_group",
+			Select(Book.Title).From(Book).GroupBy(Book.ID).String(),
+			"SELECT books.title FROM books GROUP BY books.id",
 		},
 	}
 	for _, test := range tests {
