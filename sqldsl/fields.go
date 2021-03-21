@@ -27,6 +27,20 @@ type FieldBinding struct {
 	Value interface{}
 }
 
+type Selector interface {
+	TableName() string
+}
+
+type Condition struct {
+	Predicate    Predicate
+	FieldBinding FieldBinding
+}
+
+type Join struct {
+	Table      Table
+	Conditions []Condition
+}
+
 type StringField struct {
 	table  string
 	name   string

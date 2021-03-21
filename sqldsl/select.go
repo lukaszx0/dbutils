@@ -31,20 +31,6 @@ var predicates = map[Predicate]string{
 	InPredicate:  "IN",
 }
 
-type Selector interface {
-	TableName() string
-}
-
-type Condition struct {
-	Predicate    Predicate
-	FieldBinding FieldBinding
-}
-
-type Join struct {
-	Table      Table
-	Conditions []Condition
-}
-
 type selection struct {
 	table      Table
 	projection []Field
