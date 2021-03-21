@@ -21,14 +21,14 @@ const (
 	InPredicate
 )
 
-var predicates = map[Predicate]string {
-	EqPredicate: "=",
+var predicates = map[Predicate]string{
+	EqPredicate:  "=",
 	NeqPredicate: "!=",
-	GtPredicate: ">",
-	LtPredicate: "<",
-	GePredicate: ">=",
-	LePredicate: "<=",
-	InPredicate: "IN",
+	GtPredicate:  ">",
+	LtPredicate:  "<",
+	GePredicate:  ">=",
+	LePredicate:  "<=",
+	InPredicate:  "IN",
 }
 
 type Selector interface {
@@ -40,12 +40,12 @@ type Query interface {
 }
 
 type Condition struct {
-	Predicate Predicate
+	Predicate    Predicate
 	FieldBinding FieldBinding
 }
 
 type Join struct {
-	Table Table
+	Table      Table
 	Conditions []Condition
 }
 
@@ -54,6 +54,11 @@ type selection struct {
 	projection []Field
 	joins      []Join
 	predicates []Condition
+	grouping   []Field
+	having     []Condition
+	ordering   []Field
+	limit      int
+	offset     int
 }
 
 func Select(f ...Field) SelectFromStep {
@@ -83,23 +88,28 @@ func (s *selection) Where(c ...Condition) SelectGroupByStep {
 	return s
 }
 
-func (s *selection) GroupBy(...Field) SelectHavingStep {
+func (s *selection) GroupBy(f ...Field) SelectHavingStep {
+	s.grouping = f
 	return s
 }
 
-func (s *selection) Having(...Condition) SelectOrderByStep {
+func (s *selection) Having(c ...Condition) SelectOrderByStep {
+	s.having = c
 	return s
 }
 
-func (s *selection) OrderBy(...Field) SelectLimitStep {
+func (s *selection) OrderBy(f ...Field) SelectLimitStep {
+	s.ordering = f
 	return s
 }
 
 func (s *selection) Limit(l int) SelectOffsetStep {
+	s.limit = l
 	return s
 }
 
 func (s *selection) Offset(o int) Query {
+	s.offset = o
 	return s
 }
 
