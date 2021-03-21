@@ -54,6 +54,11 @@ func TestSelect(t *testing.T) {
 			Select(Book.Title).From(Book).Where(Book.ID.Eq(123)).String(),
 		},
 		{
+			"having",
+			"SELECT books.title FROM books HAVING books.id = 123",
+			Select(Book.Title).From(Book).Having(Book.ID.Eq(123)).String(),
+		},
+		{
 			"group",
 			"SELECT books.title FROM books GROUP BY books.id",
 			Select(Book.Title).From(Book).GroupBy(Book.ID).String(),

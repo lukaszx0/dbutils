@@ -146,6 +146,15 @@ func (s *selection) String() string {
 		}
 		q = fmt.Sprintf("%s WHERE %s", q, strings.Join(w, " AND "))
 	}
+	// HAVING
+	// TODO refactor to reuse WHERE logic
+	if len(s.having) > 0 {
+		var w []string
+		for _, p := range s.having {
+			w = append(w, fmt.Sprintf("%s.%s %s %v", s.table.Name(), p.FieldBinding.Field.Name(), predicates[p.Predicate], p.FieldBinding.Value))
+		}
+		q = fmt.Sprintf("%s HAVING %s", q, strings.Join(w, " AND "))
+	}
 	// GROUP BY
 	if len(s.grouping) > 0 {
 		var groups []string
