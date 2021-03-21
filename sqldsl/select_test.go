@@ -3,7 +3,8 @@ package sqldsl
 import "testing"
 
 type BookTable struct {
-	Title Field
+	ID    IntField
+	Title StringField
 }
 
 func (t *BookTable) TableName() string {
@@ -11,19 +12,23 @@ func (t *BookTable) TableName() string {
 }
 
 var Book = &BookTable{
-	Title: Field{"title", "VARCHAR(400)"},
+	ID: IntField{"id", "INT"},
+	Title: StringField{"title", "VARCHAR(400)"},
 }
 
-func TestSQLQueries(t *testing.T) {
+func TestSelect(t *testing.T) {
 	tests := []struct {
-		name string
-		gen string
-		sql string
+		name, gen, sql string
 	}{
 		{
-			name: "select",
-			gen: Select(Book.Title).From(Book).String(),
-			sql: "SELECT books.title FROM books",
+			"select",
+			Select(Book.Title).From(Book).String(),
+			"SELECT books.title FROM books",
+		},
+		{
+			"select_where",
+			Select(Book.Title).From(Book).Where(Book.ID.Eq(123)).String(),
+			"SELECT books.title FROM books WHERE books.id = 123",
 		},
 	}
 	for _, test := range tests {
