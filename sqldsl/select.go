@@ -78,8 +78,28 @@ func (s *selection) On(c ...Condition) SelectJoinStep {
 	return s
 }
 
-func (s *selection) Where(c ...Condition) Query {
+func (s *selection) Where(c ...Condition) SelectGroupByStep {
 	s.predicates = c
+	return s
+}
+
+func (s *selection) GroupBy(...Field) SelectHavingStep {
+	return s
+}
+
+func (s *selection) Having(...Condition) SelectOrderByStep {
+	return s
+}
+
+func (s *selection) OrderBy(...Field) SelectLimitStep {
+	return s
+}
+
+func (s *selection) Limit(l int) SelectOffsetStep {
+	return s
+}
+
+func (s *selection) Offset(o int) Query {
 	return s
 }
 
